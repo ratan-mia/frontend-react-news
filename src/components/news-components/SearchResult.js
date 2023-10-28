@@ -3,9 +3,9 @@ import axios from "axios";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import CstmDate from "../CstmDate";
 import placeholder from "../../assets/images/placeholder-image.jpg";
+import { debounce } from "lodash";
 
 const SearchResult = () => {
-//   const [searchParams] = useSearchParams();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("query");
   const [articles, setArticles] = useState([]);
@@ -19,50 +19,50 @@ const SearchResult = () => {
   let publicUrl = process.env.PUBLIC_URL + "/";
   let imagealt = "image";
 
-
-
   useEffect(() => {
-    const fetchSearchResult = () => {
-      let url = `https://newsapi.org/v2/everything?q=${query}`;
+    const searchArticlesDebounced = debounce(searchArticles, 500);
 
-    //   if (search) {
-    //     setSearchParams(search);
-    //   }
+    searchArticlesDebounced();
 
-      if (sortBy) {
-        url += `&sortBy=${sortBy}`;
-      }
-
-      if (language) {
-        url += `&language=${language}`;
-      }
-
-      if (fromDate) {
-        url += `&from=${fromDate}`;
-      }
-      if (toDate) {
-        url += `&to=${toDate}`;
-      }
-
-      if(apiKey) 
-      {
-        url += `&apiKey=${apiKey}`;
-      }
-
-      axios
-        .get(url)
-        .then((response) => {
-          const { articles } = response.data;
-          console.log(response);
-          setArticles(articles);
-        })
-        .catch((error) => {
-          console.error("Error fetching search results:", error);
-        });
+    return () => {
+      searchArticlesDebounced.cancel();
     };
-
-    fetchSearchResult();
   }, [query, search, sortBy, language, fromDate, toDate]);
+
+  const searchArticles = () => {
+    let url = `https://newsapi.org/v2/everything?q=${search}`;
+
+    if (sortBy) {
+      url += `&sortBy=${sortBy}`;
+    }
+
+    if (language) {
+      url += `&language=${language}`;
+    }
+
+    if (fromDate) {
+      url += `&from=${fromDate}`;
+    }
+    if (toDate) {
+      url += `&to=${toDate}`;
+    }
+
+    if (apiKey) {
+      url += `&apiKey=${apiKey}`;
+    }
+
+    axios
+      .get(url)
+      .then((response) => {
+        const { articles } = response.data;
+        console.log(response);
+        console.log("nice");
+        setArticles(articles);
+      })
+      .catch((error) => {
+        console.error("Error fetching search results:", error);
+      });
+  };
 
   return (
     <div className="dont-miss-area pd-top-75 pd-bottom-50 go-top">
@@ -81,7 +81,7 @@ const SearchResult = () => {
         </div>
         <div className="row mb-4">
           <div className="col-md-3">
-            <label htmlFor="sortBy">Search:</label>
+            <label htmlFor="search">Search:</label>
             <input
               type="text"
               id="search"
@@ -90,7 +90,7 @@ const SearchResult = () => {
             />
           </div>
           <div className="col-md-3">
-            {/* <label htmlFor="sortBy">Sort By:</label> */}
+            <label htmlFor="sortBy">Sort By:</label>
             <select
               id="sortBy"
               className="form-select"
@@ -103,7 +103,7 @@ const SearchResult = () => {
             </select>
           </div>
           <div className="col-md-3">
-            {/* <label htmlFor="language">Language:</label> */}
+            <label htmlFor="language">Language:</label>
             <select
               id="language"
               className="form-select"
@@ -117,7 +117,6 @@ const SearchResult = () => {
           </div>
         </div>
         <div className="row mb-4">
-      
           <div className="col-md-3">
             <label htmlFor="fromDate">From Date:</label>
             <input
@@ -175,17 +174,10 @@ const SearchResult = () => {
                         </Link>
                       </h6>
                       <p>{article.description}</p>
-                      {/* Render other article details */}
                       <div className="spw-bottom">
                         <ul>
                           <li>
                             <div className="media">
-                              {/* <div className="media-left">
-                            <img
-                              src={publicUrl + "assets/img/post/1.png"}
-                              alt="img"
-                            />
-                          </div> */}
                               <div className="media-body align-self-center">
                                 <p>{article.author}</p>
                               </div>
